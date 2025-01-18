@@ -561,7 +561,7 @@
 
 
 
-
+// import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 
 import React, { useState, useEffect } from 'react';
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
@@ -616,9 +616,36 @@ const AIDocumentAnalysis: React.FC<AIDocumentAnalysisProps> = ({ documentHash })
     };
   }, []);
 
+  // const extractPDFContent = async (arrayBuffer: ArrayBuffer): Promise<string> => {
+  //   try {
+  //     // const pdfjsLib = window['pdfjs-dist/build/pdf'];
+  //     const pdfjsLib = window['pdfjs-dist/build/pdf'] as any;
+
+  //     // const pdfjsLib = window['pdfjs-dist/build/pdf'] as typeof import('pdfjs-dist/build/pdf');
+  //     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      
+  //     const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+  //     const pdf = await loadingTask.promise;
+      
+  //     let textContent = '';
+      
+  //     for (let i = 1; i <= pdf.numPages; i++) {
+  //       const page = await pdf.getPage(i);
+  //       const content = await page.getTextContent();
+  //       const strings = content.items.map((item: { str: string }) => item.str);
+  //       textContent += strings.join(' ') + '\n';
+  //     }
+      
+  //     return textContent;
+  //   } catch (error) {
+  //     console.error('Error parsing PDF:', error);
+  //     throw new Error('Failed to extract text from PDF');
+  //   }
+  // };
+
   const extractPDFContent = async (arrayBuffer: ArrayBuffer): Promise<string> => {
     try {
-      const pdfjsLib = window['pdfjs-dist/build/pdf'];
+      const pdfjsLib = window['pdfjs-dist/build/pdf'] as any; // Use 'any' temporarily
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
       
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
@@ -639,6 +666,7 @@ const AIDocumentAnalysis: React.FC<AIDocumentAnalysisProps> = ({ documentHash })
       throw new Error('Failed to extract text from PDF');
     }
   };
+
 
   const fetchDocumentContent = async (hash: string): Promise<string> => {
     try {
@@ -776,10 +804,59 @@ export const ContractManagement: React.FC = () => {
     }
   }, [account]);
 
+  // const fetchDocuments = async () => {
+  //   if (!account) return;
+  //   try {
+  //     const response = await aptosClient().view<[Document]>({
+  //       payload: {
+  //         function: `${moduleAddress}::${moduleName}::get_all_documents`,
+  //         typeArguments: [],
+  //         functionArguments: [],
+  //       }
+  //     });
+  //     if (Array.isArray(response) && response.length > 0) {
+  //       const userDocuments = response[0].filter(
+  //         (doc: Document) => doc.creator === account.address
+  //       );
+  //       setDocuments(userDocuments);
+  //     } else {
+  //       setDocuments([]);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching documents:", error);
+  //   }
+  // };
+
+  // const fetchPendingDocuments = async () => {
+  //   if (!account) return;
+  //   try {
+  //     const response = await aptosClient().view<Document[]>({
+  //       payload: {
+  //         function: `${moduleAddress}::${moduleName}::get_all_documents`,
+  //         typeArguments: [],
+  //         functionArguments: [],
+  //       }
+  //     });
+
+  //     if (Array.isArray(response) && response.length > 0) {
+  //       const pendingDocs = response[0].filter((doc: Document) => 
+  //         doc.signers.includes(account.address) && 
+  //         !doc.signatures.some((sig: Signature) => sig.signer === account.address) &&
+  //         !doc.is_completed
+  //       );
+  //       setPendingDocuments(pendingDocs);
+  //     } else {
+  //       setPendingDocuments([]);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching pending documents:", error);
+  //   }
+  // };
+
   const fetchDocuments = async () => {
     if (!account) return;
     try {
-      const response = await aptosClient().view<[Document]>({
+      const response = await aptosClient().view<Document[]>({
         payload: {
           function: `${moduleAddress}::${moduleName}::get_all_documents`,
           typeArguments: [],
@@ -787,7 +864,7 @@ export const ContractManagement: React.FC = () => {
         }
       });
       if (Array.isArray(response) && response.length > 0) {
-        const userDocuments = response[0].filter(
+        const userDocuments = response.filter(
           (doc: Document) => doc.creator === account.address
         );
         setDocuments(userDocuments);
@@ -798,7 +875,9 @@ export const ContractManagement: React.FC = () => {
       console.error("Error fetching documents:", error);
     }
   };
-
+ 
+ 
+ 
   const fetchPendingDocuments = async () => {
     if (!account) return;
     try {
@@ -809,9 +888,9 @@ export const ContractManagement: React.FC = () => {
           functionArguments: [],
         }
       });
-
+  
       if (Array.isArray(response) && response.length > 0) {
-        const pendingDocs = response[0].filter((doc: Document) => 
+        const pendingDocs = response.filter((doc: Document) => 
           doc.signers.includes(account.address) && 
           !doc.signatures.some((sig: Signature) => sig.signer === account.address) &&
           !doc.is_completed

@@ -103,7 +103,7 @@ interface AIDocumentAnalysisProps {
   documentContent: string | null;
 }
 
-const AIDocumentAnalysis: React.FC<AIDocumentAnalysisProps> = ({ documentHash,documentContent }) => {
+const AIDocumentAnalysis: React.FC<AIDocumentAnalysisProps> = ({ documentContent }) => {
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
